@@ -22,7 +22,7 @@ const UserManage = () => {
                           className="inline-flex items-center justify-center px-8 py-3 bg-green-300 
                             text-white font-semibold rounded-lg hover:bg-green-400 
                             transform hover:scale-105 transition-all duration-200">
-                              เพิ่มบุคคล
+                              เพิ่มบุคคลากร
                         </Link>
                       </div>
                       </div>
