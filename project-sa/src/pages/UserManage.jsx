@@ -14,7 +14,7 @@ const UserManage = () => {
                     <div className="bg-white rounded-2xl shadow-2xl p-8">
                       <div className="flex justify-between items-center mb-8">
                         <div>
-                          <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
+                          <h1 className="text-3xl font-bold text-gray-800">บัญชีผู้ใช้</h1>
                           <p className="text-gray-600 mt-1">ยินดีต้อนรับ, {loggedInUser.name}</p>
                         </div>
                         <div className="items-center mt-8 p-6 bg-gray-50 rounded-lg">
@@ -22,7 +22,7 @@ const UserManage = () => {
                           className="inline-flex items-center justify-center px-8 py-3 bg-green-300 
                             text-white font-semibold rounded-lg hover:bg-green-400 
                             transform hover:scale-105 transition-all duration-200">
-                              เพิ่มบุคคล
+                              เพิ่มบุคคลากร
                         </Link>
                       </div>
                       </div>
