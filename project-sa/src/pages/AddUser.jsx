@@ -20,7 +20,7 @@ const AddUser = () => {
       </div>
     );
   }
-
+ 
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
