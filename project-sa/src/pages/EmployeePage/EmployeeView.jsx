@@ -9,20 +9,28 @@ const EmployeeView = ({ employee, onClose }) => {
         <h2 className="text-2xl font-bold mb-4">รายละเอียดพนักงาน</h2>
 
         <div className="grid grid-cols-1 gap-2 text-sm text-gray-700">
+          <p><strong>รหัสพนักงาน:</strong> {employee.id}</p>
           <p><strong>ชื่อไทย:</strong> {employee.firstNameTh} {employee.lastNameTh}</p>
           <p><strong>ชื่ออังกฤษ:</strong> {employee.firstNameEn} {employee.lastNameEn}</p>
+          <p><strong>เพศ:</strong> {employee.gender}</p>
+          <p><strong>วันเกิด:</strong> {employee.birthDate}</p>
+          <p><strong>ที่อยู่:</strong> {employee.address}</p>
           <p><strong>Email:</strong> {employee.email}</p>
           <p><strong>เบอร์โทร:</strong> {employee.phone}</p>
           <p><strong>ตำแหน่ง:</strong> {employee.position}</p>
           <p><strong>แผนก:</strong> {employee.department}</p>
-          <p><strong>เงินเดือน:</strong> {employee.salary.toLocaleString()} บาท</p>
+          <p><strong>เงินเดือน:</strong> {Number(employee.salary).toLocaleString()} บาท</p>
           <p><strong>วันที่เริ่มงาน:</strong> {employee.startDate}</p>
           <p>
             <strong>สถานะ:</strong>{" "}
             {employee.status === "active" ? (
-              <span className="px-2 inline-flex text-xs rounded-full bg-green-100 text-green-800">ทำงาน</span>
+              <span className="px-2 inline-flex text-xs rounded-full bg-green-100 text-green-800">
+                ทำงาน
+              </span>
             ) : (
-              <span className="px-2 inline-flex text-xs rounded-full bg-red-100 text-red-800">ลาออก</span>
+              <span className="px-2 inline-flex text-xs rounded-full bg-red-100 text-red-800">
+                ลาออก
+              </span>
             )}
           </p>
         </div>

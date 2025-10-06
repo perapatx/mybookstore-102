@@ -7,22 +7,23 @@ import ContractView from "./ContractView";
 const ContractPage = () => {
   // ตัวอย่างพนักงานสอดคล้องกับ EmployeePage
   const employees = [
-    { id: 1, firstNameTh: "สมชาย", lastNameTh: "ใจดี" },
-    { id: 2, firstNameTh: "สาวิตรี", lastNameTh: "สุขใจ" },
-    { id: 3, firstNameTh: "อนุชา", lastNameTh: "พัฒนา" },
+    { id: "EMP001", firstNameTh: "สมชาย", lastNameTh: "ใจดี" },
+    { id: "EMP002", firstNameTh: "สาวิตรี", lastNameTh: "สุขใจ" },
+    { id: "EMP003", firstNameTh: "อนุชา", lastNameTh: "พัฒนา" },
   ];
 
   // แปลงชื่อเต็มสำหรับ select
   const employeeOptions = employees.map(emp => ({
     id: emp.id,
-    name: `${emp.firstNameTh} ${emp.lastNameTh}`
+    name: `${emp.id} - ${emp.firstNameTh} ${emp.lastNameTh}`
   }));
 
-  // ตัวอย่างสัญญาที่สร้างแล้ว
+  // ตัวอย่างสัญญาที่สร้างแล้ว (เพิ่ม contractCode)
   const initialContracts = [
     {
       id: 1,
-      employeeId: 1,
+      contractCode: "CT001",
+      employeeId: "EMP001",
       employeeName: "สมชาย ใจดี",
       type: "Full-time",
       startDate: "2023-01-01",
@@ -32,7 +33,8 @@ const ContractPage = () => {
     },
     {
       id: 2,
-      employeeId: 2,
+      contractCode: "CT002",
+      employeeId: "EMP002",
       employeeName: "สาวิตรี สุขใจ",
       type: "Part-time",
       startDate: "2023-02-01",
@@ -46,13 +48,20 @@ const ContractPage = () => {
   const [selectedContract, setSelectedContract] = useState(null);
   const [view, setView] = useState("list"); // list | add | edit | detail
 
+  // 🔹 ฟังก์ชันสร้างรหัสสัญญาใหม่
+  const generateContractCode = () => {
+    const nextNumber = contracts.length + 1;
+    return `CT${String(nextNumber).padStart(3, "0")}`; // เช่น CT003
+  };
+
   const handleAdd = (contract) => {
-    const emp = employees.find(e => e.id.toString() === contract.employeeId.toString());
+    const emp = employees.find(e => e.id === contract.employeeId);
     setContracts([
       ...contracts,
       {
         ...contract,
         id: Date.now(),
+        contractCode: generateContractCode(), // เพิ่มรหัสสัญญาอัตโนมัติ
         employeeName: emp ? `${emp.firstNameTh} ${emp.lastNameTh}` : contract.employeeName
       }
     ]);
@@ -60,10 +69,11 @@ const ContractPage = () => {
   };
 
   const handleUpdate = (updated) => {
-    const emp = employees.find(e => e.id.toString() === updated.employeeId.toString());
+    const emp = employees.find(e => e.id === updated.employeeId);
     setContracts(contracts.map(c => c.id === updated.id ? { 
       ...updated, 
-      employeeName: emp ? `${emp.firstNameTh} ${emp.lastNameTh}` : updated.employeeName
+      employeeName: emp ? `${emp.firstNameTh} ${emp.lastNameTh}` : updated.employeeName,
+      contractCode: c.contractCode // คงค่า contractCode เดิมไว้
     } : c));
     setView("list");
   };

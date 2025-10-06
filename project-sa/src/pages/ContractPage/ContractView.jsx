@@ -16,15 +16,20 @@ const ContractView = ({ contract, onClose }) => {
         <h2 className="text-2xl font-bold mb-4">รายละเอียดสัญญา</h2>
 
         <div className="space-y-2">
+          <p><span className="font-semibold">รหัสสัญญา:</span> {contract.contractCode}</p>
+          <p><span className="font-semibold">รหัสพนักงาน:</span> {contract.employeeId}</p>
           <p><span className="font-semibold">พนักงาน:</span> {contract.employeeName}</p>
           <p><span className="font-semibold">ประเภทสัญญา:</span> {contract.type}</p>
           <p><span className="font-semibold">ระยะเวลา:</span> {contract.startDate} - {contract.endDate}</p>
           <p><span className="font-semibold">เงินเดือน:</span> {contract.salary.toLocaleString()} บาท</p>
           <p>
             <span className="font-semibold">สถานะ:</span>{" "}
-            <span className={`px-2 inline-flex text-xs rounded-full ${contract.status === "active" 
-              ? "bg-green-100 text-green-800" 
-              : "bg-red-100 text-red-800"}`}>
+            <span
+              className={`px-2 inline-flex text-xs rounded-full ${contract.status === "active"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+                }`}
+            >
               {contract.status === "active" ? "ใช้งาน" : "หมดอายุ"}
             </span>
           </p>

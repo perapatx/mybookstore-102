@@ -1,22 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-const EmployeeFormAdd = ({ onSave, onCancel }) => {
+const EmployeeFormAdd = ({ onSave, onCancel, nextEmployeeId }) => {
   const [form, setForm] = useState({
     firstNameTh: "",
     lastNameTh: "",
     firstNameEn: "",
     lastNameEn: "",
+    gender: "",
+    birthDate: "",
     email: "",
     position: "",
     department: "",
     salary: "",
     phone: "",
+    address: "",
     startDate: "",
     status: "active",
   });
 
   const positions = ["Developer", "HR Manager", "Marketing Manager", "Sales Executive", "Accountant"];
   const departments = ["IT", "HR", "Marketing", "Sales", "Finance"];
+  const genders = ["ชาย", "หญิง", "อื่น ๆ"];
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -31,6 +35,32 @@ const EmployeeFormAdd = ({ onSave, onCancel }) => {
     <div className="bg-white p-6 shadow-lg rounded-lg">
       <h2 className="text-2xl font-bold mb-4">เพิ่มพนักงานใหม่</h2>
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        {/* รหัสพนักงาน (แสดงอย่างเดียว) */}
+        <div>
+          <label>รหัสพนักงาน</label>
+          <input
+            value={nextEmployeeId}
+            readOnly
+            className="w-full border px-3 py-2 rounded-lg bg-gray-100 cursor-not-allowed"
+          />
+          <p className="text-xs text-gray-500 mt-1">รหัสจะถูกสร้างอัตโนมัติ</p>
+        </div>
+
+        {/* เพศ */}
+        <div>
+          <label>เพศ</label>
+          <select
+            name="gender"
+            value={form.gender}
+            onChange={handleChange}
+            required
+            className="w-full border px-3 py-2 rounded-lg"
+          >
+            <option value="">เลือกเพศ</option>
+            {genders.map(g => <option key={g} value={g}>{g}</option>)}
+          </select>
+        </div>
 
         {/* ชื่อไทย */}
         <div>
@@ -79,6 +109,19 @@ const EmployeeFormAdd = ({ onSave, onCancel }) => {
             onChange={handleChange}
             pattern="^[A-Za-z\s]+$"
             title="กรอกได้เฉพาะตัวอักษรอังกฤษ"
+            required
+            className="w-full border px-3 py-2 rounded-lg"
+          />
+        </div>
+
+        {/* วันเกิด */}
+        <div>
+          <label>วันเกิด</label>
+          <input
+            name="birthDate"
+            type="date"
+            value={form.birthDate}
+            onChange={handleChange}
             required
             className="w-full border px-3 py-2 rounded-lg"
           />
@@ -152,6 +195,19 @@ const EmployeeFormAdd = ({ onSave, onCancel }) => {
           />
         </div>
 
+        {/* ที่อยู่ */}
+        <div className="md:col-span-2">
+          <label>ที่อยู่</label>
+          <textarea
+            name="address"
+            value={form.address}
+            onChange={handleChange}
+            rows="3"
+            className="w-full border px-3 py-2 rounded-lg"
+            required
+          />
+        </div>
+
         {/* วันที่เริ่มงาน */}
         <div>
           <label>วันที่เริ่มงาน</label>
@@ -167,8 +223,19 @@ const EmployeeFormAdd = ({ onSave, onCancel }) => {
 
         {/* ปุ่มบันทึก/ยกเลิก */}
         <div className="md:col-span-2 flex justify-end gap-4 mt-4">
-          <button type="button" onClick={onCancel} className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600">ยกเลิก</button>
-          <button type="submit" className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">บันทึก</button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600"
+          >
+            ยกเลิก
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+          >
+            บันทึก
+          </button>
         </div>
       </form>
     </div>

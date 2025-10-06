@@ -7,7 +7,7 @@ import EmployeeFormEdit from "./EmployeeFormEdit";
 const EmployeePage = () => {
   const [employees, setEmployees] = useState([
     {
-      id: 1,
+      id: "EMP001",
       firstNameTh: "สมชาย",
       lastNameTh: "ใจดี",
       firstNameEn: "Somchai",
@@ -21,7 +21,7 @@ const EmployeePage = () => {
       status: "active",
     },
     {
-      id: 2,
+      id: "EMP002",
       firstNameTh: "สาวิตรี",
       lastNameTh: "สุขใจ",
       firstNameEn: "Sawitree",
@@ -35,7 +35,7 @@ const EmployeePage = () => {
       status: "inactive",
     },
     {
-      id: 3,
+      id: "EMP003",
       firstNameTh: "อนุชา",
       lastNameTh: "พัฒนา",
       firstNameEn: "Anucha",
@@ -61,7 +61,13 @@ const EmployeePage = () => {
   // เพิ่มพนักงาน
   const handleAdd = () => setAdding(true);
   const handleSaveAdd = (newEmp) => {
-    const nextId = employees.length ? Math.max(...employees.map(e => e.id)) + 1 : 1;
+    // สร้างรหัสพนักงานใหม่ในรูปแบบ EMP001, EMP002, ...
+    const empNumbers = employees
+      .map(e => parseInt(e.id.replace('EMP', '')))
+      .filter(n => !isNaN(n));
+    const nextNumber = empNumbers.length ? Math.max(...empNumbers) + 1 : 1;
+    const nextId = `EMP${String(nextNumber).padStart(3, '0')}`;
+    
     setEmployees([...employees, { id: nextId, ...newEmp }]);
     setAdding(false);
   };

@@ -6,17 +6,21 @@ const EmployeeFormEdit = ({ employee, onSave, onCancel }) => {
     lastNameTh: employee.lastNameTh || "",
     firstNameEn: employee.firstNameEn || "",
     lastNameEn: employee.lastNameEn || "",
+    gender: employee.gender || "",
+    birthDate: employee.birthDate || "",
     email: employee.email || "",
     position: employee.position || "",
     department: employee.department || "",
     salary: employee.salary || "",
     phone: employee.phone || "",
+    address: employee.address || "",
     startDate: employee.startDate || "",
     status: employee.status || "active",
   });
 
   const positions = ["Developer", "HR Manager", "Marketing Manager", "Sales Executive", "Accountant"];
   const departments = ["IT", "HR", "Marketing", "Sales", "Finance"];
+  const genders = ["ชาย", "หญิง", "อื่น ๆ"];
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -31,6 +35,32 @@ const EmployeeFormEdit = ({ employee, onSave, onCancel }) => {
     <div className="bg-white p-6 shadow-lg rounded-lg">
       <h2 className="text-2xl font-bold mb-4">แก้ไขข้อมูลพนักงาน</h2>
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        {/* รหัสพนักงาน */}
+        <div>
+          <label>รหัสพนักงาน</label>
+          <input
+            value={employee.id}
+            readOnly
+            className="w-full border px-3 py-2 rounded-lg bg-gray-100 cursor-not-allowed"
+          />
+          <p className="text-xs text-gray-500 mt-1">ไม่สามารถแก้ไขรหัสพนักงานได้</p>
+        </div>
+
+        {/* เพศ */}
+        <div>
+          <label>เพศ</label>
+          <select
+            name="gender"
+            value={form.gender}
+            onChange={handleChange}
+            required
+            className="w-full border px-3 py-2 rounded-lg"
+          >
+            <option value="">เลือกเพศ</option>
+            {genders.map(g => <option key={g} value={g}>{g}</option>)}
+          </select>
+        </div>
 
         {/* ชื่อไทย */}
         <div>
@@ -79,6 +109,19 @@ const EmployeeFormEdit = ({ employee, onSave, onCancel }) => {
             onChange={handleChange}
             pattern="^[A-Za-z\s]+$"
             title="กรอกได้เฉพาะตัวอักษรอังกฤษ"
+            required
+            className="w-full border px-3 py-2 rounded-lg"
+          />
+        </div>
+
+        {/* วันเกิด */}
+        <div>
+          <label>วันเกิด</label>
+          <input
+            name="birthDate"
+            type="date"
+            value={form.birthDate}
+            onChange={handleChange}
             required
             className="w-full border px-3 py-2 rounded-lg"
           />
@@ -149,6 +192,19 @@ const EmployeeFormEdit = ({ employee, onSave, onCancel }) => {
             onChange={handleChange}
             required
             className="w-full border px-3 py-2 rounded-lg"
+          />
+        </div>
+
+        {/* ที่อยู่ */}
+        <div className="md:col-span-2">
+          <label>ที่อยู่</label>
+          <textarea
+            name="address"
+            value={form.address}
+            onChange={handleChange}
+            rows="3"
+            className="w-full border px-3 py-2 rounded-lg"
+            required
           />
         </div>
 

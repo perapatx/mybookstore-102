@@ -1,3 +1,4 @@
+// src/pages/EmployeePage/EmployeeList.js
 import React from "react";
 
 const EmployeeList = ({ employees, onAdd, onEdit, onDelete, onView }) => {
@@ -17,48 +18,84 @@ const EmployeeList = ({ employees, onAdd, onEdit, onDelete, onView }) => {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อไทย</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ตำแหน่ง</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">แผนก</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">จัดการ</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">รหัสพนักงาน</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">พนักงาน</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ตำแหน่ง</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">แผนก</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">สถานะ</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">จัดการ</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {employees.map((emp) => (
-              <tr key={emp.id}>
-                {/* แสดงแค่ชื่อไทย */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {emp.firstNameTh} {emp.lastNameTh}
-                </td>
+            {employees.length > 0 ? (
+              employees.map((emp) => (
+                <tr key={emp.id}>
+                  {/* รหัสพนักงาน */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {emp.id}
+                  </td>
 
-                {/* ตำแหน่ง */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{emp.position}</td>
+                  {/* ชื่อไทย */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {emp.firstNameTh} {emp.lastNameTh}
+                  </td>
 
-                {/* แผนก */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{emp.department}</td>
+                  {/* ตำแหน่ง */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {emp.position}
+                  </td>
 
-                {/* สถานะ */}
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-2 inline-flex text-xs rounded-full ${
-                      emp.status === "active"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {emp.status === "active" ? "ทำงาน" : "ลาออก"}
-                  </span>
-                </td>
+                  {/* แผนก */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {emp.department}
+                  </td>
 
-                {/* ปุ่มจัดการ */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button onClick={() => onView(emp)} className="text-gray-600 hover:text-gray-900 mr-3">ดู</button>
-                  <button onClick={() => onEdit(emp)} className="text-blue-600 hover:text-blue-900 mr-3">แก้ไข</button>
-                  <button onClick={() => onDelete(emp.id)} className="text-red-600 hover:text-red-900">ลบ</button>
+                  {/* สถานะ */}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`px-2 inline-flex text-xs font-semibold rounded-full ${
+                        emp.status === "active"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {emp.status === "active" ? "ทำงาน" : "ลาออก"}
+                    </span>
+                  </td>
+
+                  {/* ปุ่มจัดการ */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3">
+                    <button
+                      onClick={() => onView(emp)}
+                      className="text-gray-600 hover:text-gray-900"
+                    >
+                      ดู
+                    </button>
+                    <button
+                      onClick={() => onEdit(emp)}
+                      className="text-blue-600 hover:text-blue-900"
+                    >
+                      แก้ไข
+                    </button>
+                    <button
+                      onClick={() => onDelete(emp.id)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      ลบ
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan="6"
+                  className="text-center py-6 text-gray-500"
+                >
+                  ไม่มีข้อมูลพนักงาน
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
