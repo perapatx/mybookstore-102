@@ -1,6 +1,6 @@
 services:
   frontend:
-    build: ./bookstore-app
+    build: ./project-sa
     ports:
       - "3001:80"
     restart: unless-stopped
