@@ -13,7 +13,7 @@ import Report from './pages/Report';
 import ContractPageTest from "./pages/ContractPage/ContractPageTest";
 import Tax from './pages/TaxPage';
 import NotFound from './components/NotFound';
-
+import AddUser from './pages/AddUser';
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!sessionStorage.getItem("user"));
 
@@ -32,6 +32,7 @@ export default function App() {
           <Route path="contract" element={<ContractPageTest />} />
           <Route path="tax" element={<Tax />} />
           <Route path="dashboard" element={<UserManage />} />
+          <Route path="adduser" element={<AddUser />} />
         </Route>
 
         {/* 404 */}
