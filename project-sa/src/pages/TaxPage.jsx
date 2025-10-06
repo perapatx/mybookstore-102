@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import { MailIcon, PhoneIcon, LocationMarkerIcon, ClockIcon } from '@heroicons/react/outline';
-//tax
+
 const TaxPage = () => {
   // ข้อมูลพนักงานตัวอย่างจากฐานข้อมูล
   const employees = [
-    { id: 1, name: "สมชาย ใจดี", salary: 600000 },
-    { id: 2, name: "สาวิตรี สุขใจ", salary: 480000 },
-    { id: 3, name: "อนุชา พัฒนา", salary: 420000 },
+    { id: "EMP001", name: "สมชาย ใจดี"},
+    { id: "EMP002", name: "สาวิตรี สุขใจ"},
+    { id: "EMP003", name: "อนุชา พัฒนา"},
   ];
 
   // State สำหรับเก็บข้อมูลภาษีทั้งหมด
   const [taxRecords, setTaxRecords] = useState([
     {
-      id: 1,
+      id: "EMP001",
       employeeName: "สมชาย ใจดี",
       year: 2024,
       income: 600000,
@@ -27,6 +27,7 @@ const TaxPage = () => {
   
   // State สำหรับเก็บข้อมูลในฟอร์ม
   const [formData, setFormData] = useState({
+    employeeId: "",
     employeeName: "",
     year: new Date().getFullYear(),
     monthlyIncome: ""
@@ -49,10 +50,21 @@ const TaxPage = () => {
   // ฟังก์ชันจัดการการเปลี่ยนแปลงค่าในฟอร์ม
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    // ถ้าเลือกพนักงานให้อัพเดททั้งรหัสและชื่อ
+    if (name === "employeeId") {
+      const selectedEmployee = employees.find(emp => emp.id === value);
+      setFormData(prev => ({
+        ...prev,
+        employeeId: value,
+        employeeName: selectedEmployee ? selectedEmployee.name : ""
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   // ฟังก์ชันจัดการการส่งฟอร์มคำนวณภาษี
@@ -68,7 +80,7 @@ const TaxPage = () => {
     
     // สร้างข้อมูลภาษีใหม่
     const newRecord = {
-      id: taxRecords.length + 1,
+      id: formData.employeeId,
       employeeName: formData.employeeName,
       year: parseInt(formData.year),
       income: yearlyIncome,
@@ -80,7 +92,7 @@ const TaxPage = () => {
     // เพิ่มข้อมูลใหม่เข้าไปในรายการภาษี
     setTaxRecords([...taxRecords, newRecord]);
     // รีเซ็ตฟอร์ม
-    setFormData({ employeeName: "", year: new Date().getFullYear(), monthlyIncome: "" });
+    setFormData({ employeeId: "", employeeName: "", year: new Date().getFullYear(), monthlyIncome: "" });
     // กลับไปหน้าแรก
     setShowCalculateForm(false);
   };
@@ -117,14 +129,16 @@ const TaxPage = () => {
                     เลือกพนักงาน
                   </label>
                   <select
-                    name="employeeName"
-                    value={formData.employeeName}
+                    name="employeeId"
+                    value={formData.employeeId}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                   >
                     <option value="">เลือกพนักงาน</option>
                     {employees.map(emp => (
-                      <option key={emp.id} value={emp.name}>{emp.name}</option>
+                      <option key={emp.id} value={emp.id}>
+                        {emp.id} - {emp.name}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -146,7 +160,7 @@ const TaxPage = () => {
                 {/* Input รายได้ต่อเดือน */}
                 <div className="mb-8">
                   <label className="block text-gray-700 font-medium mb-2">
-                    รายได้ต่อปี
+                    รายได้ต่อเดือน
                   </label>
                   <input
                     type="number"
@@ -195,7 +209,8 @@ const TaxPage = () => {
               {/* หัวตาราง */}
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-gray-600 font-medium">พนักงาน</th>
+                  <th className="px-6 py-4 text-left text-gray-600 font-medium">รหัสพนักงาน</th>
+                  <th className="px-6 py-4 text-left text-gray-600 font-medium">ชื่อพนักงาน</th>
                   <th className="px-6 py-4 text-left text-gray-600 font-medium">ปี</th>
                   <th className="px-6 py-4 text-left text-gray-600 font-medium">รายได้</th>
                   <th className="px-6 py-4 text-left text-gray-600 font-medium">ภาษี</th>
@@ -208,7 +223,8 @@ const TaxPage = () => {
               <tbody className="divide-y divide-gray-100">
                 {taxRecords.map((record) => (
                   <tr key={record.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-gray-900 font-medium">{record.employeeName}</td>
+                    <td className="px-6 py-4 text-gray-900 font-medium">{record.id}</td>
+                    <td className="px-6 py-4 text-gray-900">{record.employeeName}</td>
                     <td className="px-6 py-4 text-gray-700">{record.year}</td>
                     <td className="px-6 py-4 text-gray-700">
                       {record.income.toLocaleString()} บาท
