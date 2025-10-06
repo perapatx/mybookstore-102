@@ -28,7 +28,7 @@ const AddUser = () => {
 
     // Validate
     if (!username || !password || !name || !email) {
-      setError('กรุณากรอกทุกช่อง');
+      setError('กรุณากรอกทุกช่องอิอิ');
       return;
     }
 
