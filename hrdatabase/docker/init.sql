@@ -1,35 +1,81 @@
--- สร้างตาราง books
-CREATE TABLE books (
-	id SERIAL PRIMARY KEY,
-	title VARCHAR(255) NOT NULL,
-	author VARCHAR(255),
-	isbn VARCHAR(50),
-	year INTEGER,
-	price DECIMAL(10,2),
-	created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-	updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+-- 1. ตารางยูสเซอร์ (ต้องมาก่อนเพราะ FK)
+CREATE TABLE UserAccount (
+    UserID SERIAL PRIMARY KEY,
+    Username VARCHAR(50) UNIQUE NOT NULL,
+    PasswordHash VARCHAR(255) NOT NULL,
+    Role VARCHAR(10) DEFAULT 'Manager' -- แทน ENUM
 );
 
--- สร้าง function สำหรับอัพเดท updated_at โดยอัตโนมัติ
-CREATE OR REPLACE FUNCTION update_modified_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = now();
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
+-- 2. ตารางข้อมูลพนักงาน
+CREATE TABLE Employee (
+    EmployeeID SERIAL PRIMARY KEY,
+    FirstName VARCHAR(100) NOT NULL,
+    LastName VARCHAR(100) NOT NULL,
+    Gender VARCHAR(10), -- แทน ENUM('Male','Female','Other')
+    BirthDate DATE,
+    Address TEXT,
+    Phone VARCHAR(20),
+    Email VARCHAR(100) UNIQUE,
+    DepartmentID VARCHAR(50),
+    Position VARCHAR(100),
+    HireDate DATE,
+    Status VARCHAR(10) DEFAULT 'Active' -- แทน ENUM('Active','Resigned','Probation')
+);
 
--- สร้าง trigger เพื่อเรียกใช้ function update_modified_column
-CREATE TRIGGER update_books_modtime
-BEFORE UPDATE ON books
-FOR EACH ROW
-EXECUTE FUNCTION update_modified_column();
+-- 3. ตารางวันลา
+CREATE TABLE LeaveRecord (
+    LeaveID SERIAL PRIMARY KEY,
+    EmployeeID INT REFERENCES Employee(EmployeeID),
+    LeaveType VARCHAR(20), -- แทน ENUM
+    StartDate DATE NOT NULL,
+    EndDate DATE NOT NULL,
+    Reason VARCHAR(255),
+    Status VARCHAR(10) DEFAULT 'Pending'
+);
 
--- สร้าง index บน title เพื่อเพิ่มประสิทธิภาพการค้นหา
-CREATE INDEX idx_books_title ON books(title);
+-- 4. ตารางวันหยุด
+CREATE TABLE Holiday (
+    HolidayID SERIAL PRIMARY KEY,
+    HolidayName VARCHAR(100) NOT NULL,
+    Date DATE NOT NULL,
+    Description TEXT
+);
 
--- เพิ่มข้อมูลตัวอย่าง
-INSERT INTO books (title, author, isbn, year, price) VALUES
-    ('Fundamental of Deep Learning in Practice', 'Nuttachot Promrit and Sajjaporn Waijanya', '978-1234567890', 2023, 599.00),
-    ('Practical DevOps and Cloud Engineering', 'Nuttachot Promrit', '978-0987654321', 2024, 500.00),
-    ('Mastering Golang for E-commerce Back End Development', 'Nuttachot Promrit', '978-1111222233', 2023, 450.00);
+-- 5. ตารางสัญญาจ้าง
+CREATE TABLE Contract (
+    ContractID SERIAL PRIMARY KEY,
+    EmployeeID INT REFERENCES Employee(EmployeeID),
+    ContractType VARCHAR(10), -- แทน ENUM
+    StartDate DATE NOT NULL,
+    EndDate DATE,
+    Salary DECIMAL(10,2),
+    Status VARCHAR(10) -- แทน ENUM('Hired','Expired')
+);
+
+-- 6. ตารางภาษี
+CREATE TABLE Tax (
+    TaxID SERIAL PRIMARY KEY,
+    EmployeeID INT REFERENCES Employee(EmployeeID),
+    TaxYear INT NOT NULL, -- PostgreSQL ไม่มี YEAR type
+    Salary DECIMAL(10,2),
+    TaxPaid DECIMAL(10,2),
+    Benefits DECIMAL(10,2),
+    Status VARCHAR(20) -- แทน ENUM('Calculated','Incalculated')
+);
+
+-- 7. ตารางแฟ้มรายงาน
+CREATE TABLE ReportFile (
+    ReportID SERIAL PRIMARY KEY,
+    ReportType VARCHAR(100),
+    CreatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CreatedBy INT REFERENCES UserAccount(UserID),
+    FilePath VARCHAR(255)
+);
+
+-- 8. ตารางบันทึกการเข้าใช้งานระบบ
+CREATE TABLE AccessLog (			
+	LogID SERIAL PRIMARY KEY,
+	UserID INT REFERENCES UserAccount(UserID),
+	AccessTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	Action VARCHAR(255)
+);		
