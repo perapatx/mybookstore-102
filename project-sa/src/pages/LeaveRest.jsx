@@ -8,6 +8,7 @@ const LeaveRest = () => {
     setRequests([
       {
         id: 1,
+        employee_id: "EMP001",
         employee_name: "สมชาย ใจดี",
         leave_type: "ลาป่วย",
         date_start: "2024-01-15",
@@ -17,6 +18,7 @@ const LeaveRest = () => {
       },
       {
         id: 2,
+        employee_id: "EMP002",
         employee_name: "สมศรี ขยัน",
         leave_type: "ลากิจ",
         date_start: "2025-10-12",
@@ -26,6 +28,7 @@ const LeaveRest = () => {
       },
       {
         id: 3,
+        employee_id: "EMP003",
         employee_name: "สมปอง รักดี",
         leave_type: "ลาพักร้อน",
         date_start: "2025-10-20",
@@ -51,6 +54,7 @@ const LeaveRest = () => {
             <table className="w-full border-collapse">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="py-3 px-6 text-left text-gray-600 font-normal">รหัสพนักงาน</th>
                   <th className="py-3 px-6 text-left text-gray-600 font-normal">พนักงาน</th>
                   <th className="py-3 px-6 text-left text-gray-600 font-normal">ประเภท</th>
                   <th className="py-3 px-6 text-left text-gray-600 font-normal">วันที่</th>
@@ -61,6 +65,7 @@ const LeaveRest = () => {
               <tbody>
                 {requests.map((item) => (
                   <tr key={item.id} className="border-t border-gray-100 hover:bg-gray-50">
+                    <td className="py-4 px-6 text-gray-900">{item.employee_id}</td>
                     <td className="py-4 px-6 text-gray-900">{item.employee_name}</td>
                     <td className="py-4 px-6 text-gray-700">{item.leave_type}</td>
                     <td className="py-4 px-6 text-gray-700">
