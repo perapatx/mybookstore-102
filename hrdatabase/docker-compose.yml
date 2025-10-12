@@ -1,20 +1,20 @@
 services:
   db:
     build: ./docker
-    container_name: bookstore_postgres
+    container_name: hr_postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_v17:/var/lib/postgresql/data   # <-- เปลี่ยนชื่อ volume ใหม่
     ports:
       - "${POSTGRES_PORT}:5432"
     restart: unless-stopped
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: bookstore_pgadmin
+    container_name: hr_pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
@@ -27,5 +27,5 @@ services:
       - db
 
 volumes:
-  postgres_data:
+  postgres_data_v17:   # <-- สร้าง volume ใหม่
   pgadmin_data:
