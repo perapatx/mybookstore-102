@@ -72,15 +72,15 @@ type Contract struct {
 }
 
 type Tax struct {
-	ID         int     `json:"id"`
-	EmployeeID int     `json:"employee_id"`
-	TaxYear    int     `json:"tax_year"`
-	Salary     float64 `json:"salary"`
-	TaxPaid    float64 `json:"tax_paid"`
-	Benefits   float64 `json:"benefits"`
-	Status     string  `json:"status"`
+	ID           int     `json:"id"`
+	EmployeeID   int     `json:"employee_id"`
+	EmployeeName string  `json:"employee_name"`
+	TaxYear      int     `json:"tax_year"`
+	Salary       float64 `json:"salary"`
+	TaxPaid      float64 `json:"tax_paid"`
+	Benefits     float64 `json:"benefits"`
+	Status       string  `json:"status"`
 }
-
 type Report struct {
     ID           int       `json:"id"`
     EmployeeID   string    `json:"employee_id"`
@@ -426,7 +426,19 @@ func getAllContracts(c *gin.Context) {
 
 // ==================== Tax Handlers ====================
 func getAllTaxes(c *gin.Context) {
-	rows, err := db.Query("SELECT taxid, employeeid, taxyear, salary, taxpaid, benefits, status FROM tax")
+	rows, err := db.Query(`
+		SELECT 
+			t.taxid, 
+			t.employeeid, 
+			e.thaifirstname || ' ' || e.thailastname AS employee_name,
+			t.taxyear, 
+			t.salary, 
+			t.taxpaid, 
+			t.benefits, 
+			t.status
+		FROM tax t
+		JOIN employee e ON t.employeeid = e.employeeid
+	`)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -436,27 +448,56 @@ func getAllTaxes(c *gin.Context) {
 	var taxes []Tax
 	for rows.Next() {
 		var t Tax
-		if err := rows.Scan(&t.ID, &t.EmployeeID, &t.TaxYear, &t.Salary, &t.TaxPaid, &t.Benefits, &t.Status); err != nil {
+		if err := rows.Scan(
+			&t.ID,
+			&t.EmployeeID,
+			&t.EmployeeName,
+			&t.TaxYear,
+			&t.Salary,
+			&t.TaxPaid,
+			&t.Benefits,
+			&t.Status,
+		); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 		taxes = append(taxes, t)
 	}
+
 	c.JSON(http.StatusOK, taxes)
 }
-
 // อ่านรายบุคคล
 func getTaxByID(c *gin.Context) {
 	id := c.Param("id")
 	var t Tax
-	err := db.QueryRow(
-		"SELECT taxid, employeeid, taxyear, salary, taxpaid, benefits, status FROM tax WHERE taxid=$1", 
-		id,
-	).Scan(&t.ID, &t.EmployeeID, &t.TaxYear, &t.Salary, &t.TaxPaid, &t.Benefits, &t.Status)
+	err := db.QueryRow(`
+		SELECT 
+			t.taxid, 
+			t.employeeid, 
+			e.thaifirstname || ' ' || e.thailastname AS employee_name,
+			t.taxyear, 
+			t.salary, 
+			t.taxpaid, 
+			t.benefits, 
+			t.status
+		FROM tax t
+		JOIN employee e ON t.employeeid = e.employeeid
+		WHERE t.taxid = $1
+	`, id).Scan(
+		&t.ID,
+		&t.EmployeeID,
+		&t.EmployeeName,
+		&t.TaxYear,
+		&t.Salary,
+		&t.TaxPaid,
+		&t.Benefits,
+		&t.Status,
+	)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Tax record not found"})
 		return
 	}
+
 	c.JSON(http.StatusOK, t)
 }
 // เพิ่มข้อมูลใหม่
