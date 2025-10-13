@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # Service สำหรับ Database PostgreSQL
+  db:
+    image: postgres:16-alpine
+    container_name: hrd-postgres
+    restart: unless-stopped
+    env_file:
+      - ./hrdatabase/.env  # อ่านค่าจากไฟล์ .env
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}" # ใช้ค่าจาก .env มา map port
+    volumes:
+      - db-data:/var/lib/postgresql/data # เก็บข้อมูล database อย่างถาวร
+    networks:
+      - hrd-network
+
+  # Service สำหรับ Go API
+  api:
+    build:
+      context: ./go-api # ระบุให้ build จาก Dockerfile ในโฟลเดอร์ go-api
+    container_name: hrd-go-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./hrdatabase/.env # API ก็ใช้ .env เดียวกันเพื่ออ่าน user/pass ของ db ได้
+    environment:
+      - DB_HOST=db # ✨ นี่คือจุดแก้ไขสำคัญ: บังคับให้ DB_HOST เป็น 'db'
+      - POSTGRES_PORT=${POSTGRES_PORT} # ส่งค่า port จาก .env เข้าไป
+    volumes:
+      - api-uploads:/app/uploads # เก็บไฟล์อัปโหลดอย่างถาวร
+    depends_on:
+      - db # บอกให้ API รอจนกว่า db จะพร้อม
+    networks:
+      - hrd-network
+
+  # (Optional) Service สำหรับ pgAdmin เพื่อจัดการฐานข้อมูล
+  # หากต้องการใช้งาน ให้ลบเครื่องหมาย # ด้านล่างออกทั้งหมด
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   container_name: hrd-pgadmin
+  #   restart: unless-stopped
+  #   env_file:
+  #     - ./hrdatabase/.env
+  #   ports:
+  #     - "${PGADMIN_PORT}:80"
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - hrd-network
+
+# กำหนด Volumes เพื่อเก็บข้อมูลแบบถาวร
+volumes:
+  db-data:
+  api-uploads:
+
+# กำหนด Network เพื่อให้ทุก service คุยกันได้ผ่านชื่อ
+networks:
+  hrd-network:

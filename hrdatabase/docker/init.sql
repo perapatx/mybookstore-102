@@ -136,9 +136,9 @@ ON CONFLICT (HolidayName, Date) DO NOTHING;
 -- 4. Contract
 INSERT INTO Contract (EmployeeID, ContractType, StartDate, EndDate, Salary, Status)
 VALUES
-(1, 'Fulltime', '2020-01-10', NULL, 50000.00, 'Hired'),
-(2, 'Fulltime', '2021-03-15', NULL, 40000.00, 'Hired'),
-(3, 'Parttime', '2019-07-01', NULL, 25000.00, 'Hired')
+(1, 'Fulltime', '2020-01-10', '2020-01-12', 50000.00, 'Hired'),
+(2, 'Fulltime', '2021-03-15', '2020-01-12', 40000.00, 'Hired'),
+(3, 'Parttime', '2019-07-01', '2020-01-12', 25000.00, 'Hired')
 ON CONFLICT DO NOTHING;
 
 -- 5. Tax

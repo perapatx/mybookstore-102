@@ -403,6 +403,7 @@ func deleteHoliday(c *gin.Context) {
 
     c.JSON(http.StatusOK, gin.H{"message": "Holiday deleted successfully"})
 }
+
 // ==================== Contract Handlers ====================
 func getAllContracts(c *gin.Context) {
 	rows, err := db.Query("SELECT contractid, employeeid, contracttype, startdate, enddate, salary, status FROM contract")

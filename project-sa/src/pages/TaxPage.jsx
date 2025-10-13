@@ -8,9 +8,11 @@ const TaxPage = () => {
   const [employees, setEmployees] = useState([
     
   ]);
+  const [taxRecords, setTaxRecords] = useState([]);
 
   useEffect(() => {
     loadEmployees();
+    loadTax();
   }, []);
 
   const loadEmployees = async () => {
@@ -19,7 +21,7 @@ const TaxPage = () => {
       const data = await employeeAPI.getAll();
       const transformed = data.map(emp => ({
         id: emp.id,
-        name: emp.thai_first_name + emp.thai_last_name,
+        name: emp.thai_first_name +' ' +emp.thai_last_name,
         position: emp.position,
         department: emp.department_id,
       }));
@@ -34,17 +36,33 @@ const TaxPage = () => {
   };
 
   // State สำหรับเก็บข้อมูลภาษีทั้งหมด
-  const [taxRecords, setTaxRecords] = useState([
-    {
-      id: "EMP001",
-      employeeName: "สมชาย ใจดี",
-      year: 2024,
-      income: 600000,
-      expenses: 15000,
-      insurance: 9000,
-      status: "คำนวณแล้ว"
+  
+  const statusMap = {
+  Calculated: "คำนวณแล้ว",
+  inCalculated: "ยังไม่คำนวณ",
+  };
+  const loadTax = async () => {
+    try {
+      setLoading(true);
+      const data = await taxAPI.getAll();
+      const transformed = data.map(emp => ({
+        id: emp.id,
+        employeeName: emp.employee_name,
+        year: emp.tax_year,
+        income: emp.salary,
+        expenses: emp.tax_paid,
+        insurance: emp.benefits,
+        status: statusMap[emp.status]
+      }));
+
+      setTaxRecords(transformed);
+    } catch (err) {
+      console.error("Error loading employees:", err);
+      alert("ไม่สามารถโหลดข้อมูลพนักงานได้");
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
   // State สำหรับควบคุมการแสดงหน้าฟอร์มคำนวณภาษี
   const [showCalculateForm, setShowCalculateForm] = useState(false);
@@ -105,7 +123,7 @@ const TaxPage = () => {
     // สร้างข้อมูลภาษีใหม่
     const newRecord = {
       id: formData.employeeId,
-      employeeName: formData.employeeName,
+      name: formData.employeeName,
       year: parseInt(formData.year),
       income: yearlyIncome,
       expenses: tax,
@@ -126,14 +144,6 @@ const TaxPage = () => {
     setTaxRecords(taxRecords.filter(record => record.id !== id));
   };
 
-
-
-
-
-
-
-
-  
   // หน้าฟอร์มคำนวณภาษี
   if (showCalculateForm) {
     return (
