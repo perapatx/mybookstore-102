@@ -1,58 +1,54 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import EmployeeList from "./EmployeeList";
 import EmployeeView from "./EmployeeView";
 import EmployeeFormAdd from "./EmployeeFormAdd";
 import EmployeeFormEdit from "./EmployeeFormEdit";
+import { employeeAPI } from "../../services/api";
 
 const EmployeePage = () => {
-  const [employees, setEmployees] = useState([
-    {
-      id: "EMP001",
-      firstNameTh: "สมชาย",
-      lastNameTh: "ใจดี",
-      firstNameEn: "Somchai",
-      lastNameEn: "Jaidee",
-      email: "somchai@example.com",
-      phone: "0812345678",
-      position: "Developer",
-      department: "IT",
-      salary: 30000,
-      startDate: "2023-01-15",
-      status: "active",
-    },
-    {
-      id: "EMP002",
-      firstNameTh: "สาวิตรี",
-      lastNameTh: "สุขใจ",
-      firstNameEn: "Sawitree",
-      lastNameEn: "Sukjai",
-      email: "sawitree@example.com",
-      phone: "0898765432",
-      position: "HR Manager",
-      department: "HR",
-      salary: 40000,
-      startDate: "2022-08-01",
-      status: "inactive",
-    },
-    {
-      id: "EMP003",
-      firstNameTh: "อนุชา",
-      lastNameTh: "พัฒนา",
-      firstNameEn: "Anucha",
-      lastNameEn: "Patthana",
-      email: "anucha@example.com",
-      phone: "0861234567",
-      position: "Marketing Manager",
-      department: "Marketing",
-      salary: 35000,
-      startDate: "2021-05-20",
-      status: "active",
-    },
-  ]);
-
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [adding, setAdding] = useState(false);
+
+  // Load employees from API on mount
+  useEffect(() => {
+    loadEmployees();
+  }, []);
+
+  const loadEmployees = async () => {
+    try {
+      setLoading(true);
+      const data = await employeeAPI.getAll();
+      
+      // Transform backend data to match frontend format
+      const transformedData = data.map(emp => ({
+        id: emp.id,
+        firstNameTh: emp.thai_first_name, // Database doesn't have Thai names
+        lastNameTh: emp.thai_last_name,
+        firstNameEn: emp.eng_first_name,
+        lastNameEn: emp.eng_last_name,
+        email: emp.email,
+        phone: emp.phone,
+        position: emp.position,
+        department: emp.department_id,
+        salary: 0, // Not in employee table
+        birthDate: emp.birth_date,
+        address: emp.address,
+        gender: emp.gender,
+        startDate: emp.hire_date,
+        status: emp.status?.toLowerCase() === 'active' ? 'active' : 'inactive',
+      }));
+      
+      setEmployees(transformedData);
+    } catch (err) {
+      console.error("Error loading employees:", err);
+      alert("ไม่สามารถโหลดข้อมูลพนักงานได้");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ดูรายละเอียด
   const handleView = (emp) => setSelectedEmployee(emp);
@@ -60,33 +56,55 @@ const EmployeePage = () => {
 
   // เพิ่มพนักงาน
   const handleAdd = () => setAdding(true);
-  const handleSaveAdd = (newEmp) => {
-    // สร้างรหัสพนักงานใหม่ในรูปแบบ EMP001, EMP002, ...
-    const empNumbers = employees
-      .map(e => parseInt(e.id.replace('EMP', '')))
-      .filter(n => !isNaN(n));
-    const nextNumber = empNumbers.length ? Math.max(...empNumbers) + 1 : 1;
-    const nextId = `EMP${String(nextNumber).padStart(3, '0')}`;
-    
-    setEmployees([...employees, { id: nextId, ...newEmp }]);
-    setAdding(false);
+  const handleSaveAdd = async (newEmp) => {
+    try {
+      await employeeAPI.create(newEmp);
+      await loadEmployees(); // Reload list
+      setAdding(false);
+      alert("เพิ่มพนักงานสำเร็จ");
+    } catch (err) {
+      console.error("Error adding employee:", err);
+      alert("ไม่สามารถเพิ่มพนักงานได้: " + (err.response?.data?.error || err.message));
+    }
   };
   const handleCancelAdd = () => setAdding(false);
 
   // แก้ไขพนักงาน
   const handleEdit = (emp) => setEditingEmployee(emp);
-  const handleSaveEdit = (updatedEmp) => {
-    setEmployees(employees.map(e => (e.id === editingEmployee.id ? { ...e, ...updatedEmp } : e)));
-    setEditingEmployee(null);
+  const handleSaveEdit = async (updatedEmp) => {
+    try {
+      await employeeAPI.update(editingEmployee.id, updatedEmp);
+      await loadEmployees(); // Reload list
+      setEditingEmployee(null);
+      alert("แก้ไขข้อมูลสำเร็จ");
+    } catch (err) {
+      console.error("Error updating employee:", err);
+      alert("ไม่สามารถแก้ไขข้อมูลได้: " + (err.response?.data?.error || err.message));
+    }
   };
   const handleCancelEdit = () => setEditingEmployee(null);
 
   // ลบพนักงาน
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("คุณต้องการลบพนักงานคนนี้หรือไม่?")) {
-      setEmployees(employees.filter(emp => emp.id !== id));
+      try {
+        await employeeAPI.delete(id);
+        await loadEmployees(); // Reload list
+        alert("ลบพนักงานสำเร็จ");
+      } catch (err) {
+        console.error("Error deleting employee:", err);
+        alert("ไม่สามารถลบพนักงานได้: " + (err.response?.data?.error || err.message));
+      }
     }
   };
+
+  if (loading && employees.length === 0) {
+    return (
+      <div className="p-6 flex justify-center items-center">
+        <div className="text-lg text-gray-600">กำลังโหลดข้อมูล...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -105,6 +123,7 @@ const EmployeePage = () => {
         <EmployeeFormAdd
           onSave={handleSaveAdd}
           onCancel={handleCancelAdd}
+          nextEmployeeId="จะถูกสร้างโดยระบบ"
         />
       )}
 

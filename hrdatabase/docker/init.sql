@@ -13,8 +13,10 @@ CREATE TABLE IF NOT EXISTS UserAccount (
 -- 2. ตารางข้อมูลพนักงาน
 CREATE TABLE IF NOT EXISTS Employee (
     EmployeeID SERIAL PRIMARY KEY,
-    FirstName VARCHAR(100) NOT NULL,
-    LastName VARCHAR(100) NOT NULL,
+    ThaiFirstName VARCHAR(100) NOT NULL,
+    ThaiLastName VARCHAR(100) NOT NULL,
+    EngFirstName VARCHAR(100) NOT NULL,
+    EngLastName VARCHAR(100) NOT NULL,
     Gender VARCHAR(10),
     BirthDate DATE,
     Address TEXT,
@@ -70,12 +72,25 @@ CREATE TABLE IF NOT EXISTS Tax (
 );
 
 -- 7. ตารางแฟ้มรายงาน
-CREATE TABLE IF NOT EXISTS ReportFile (
-    ReportID SERIAL PRIMARY KEY,
-    ReportType VARCHAR(100),
-    CreatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CreatedBy INT REFERENCES UserAccount(UserID),
-    FilePath VARCHAR(255)
+CREATE TABLE IF NOT EXISTS reports (
+    id SERIAL PRIMARY KEY,
+    employee_id INT NOT NULL REFERENCES Employee(EmployeeID) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    date DATE NOT NULL,
+    category VARCHAR(50),
+    status VARCHAR(50) DEFAULT 'รอพิจารณา',
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- ============================
+-- ตาราง Report Files
+-- ============================
+CREATE TABLE IF NOT EXISTS report_files (
+    id SERIAL PRIMARY KEY,
+    report_id INT NOT NULL REFERENCES reports(id) ON DELETE CASCADE,
+    file_path TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
 -- 8. ตารางบันทึกการเข้าใช้งานระบบ
@@ -100,12 +115,14 @@ ON CONFLICT (Username) DO NOTHING;
 
 -- 2. Employee
 INSERT INTO Employee (
-    FirstName, LastName, Gender, BirthDate, Address, Phone, Email, DepartmentID, Position, HireDate, Status
+    ThaiFirstName, ThaiLastName, EngFirstName, EngLastName,
+    Gender, BirthDate, Address, Phone, Email,
+    DepartmentID, Position, HireDate, Status
 )
 VALUES
-('Somchai', 'Sukjai', 'Male', '1990-05-12', '123 Bangkok Rd', '0812345678', 'somchai@example.com', 'HR', 'HR Manager', '2020-01-10', 'Active'),
-('Suda', 'Dee', 'Female', '1993-08-25', '456 Chiangmai St', '0823456789', 'suda@example.com', 'IT', 'Developer', '2021-03-15', 'Active'),
-('Prasit', 'Thongdee', 'Male', '1988-11-30', '789 Phuket Ave', '0834567890', 'prasit@example.com', 'Finance', 'Accountant', '2019-07-01', 'Active')
+('สมชาย', 'สุขใจ', 'Somchai', 'Sukjai', 'ชาย', '1990-05-12', '123 ถนนบางกอก', '0812345678', 'somchai@example.com', 'HR', 'HR Manager', '2020-01-10', 'Active'),
+('สุดา', 'ดี', 'Suda', 'Dee', 'หญิง', '1993-08-25', '456 ถนนเชียงใหม่', '0823456789', 'suda@example.com', 'IT', 'Developer', '2021-03-15', 'Active'),
+('ประสิทธิ์', 'ทองดี', 'Prasit', 'Thongdee', 'ชาย', '1988-11-30', '789 ถนนภูเก็ต', '0834567890', 'prasit@example.com', 'Finance', 'Accountant', '2019-07-01', 'Active')
 ON CONFLICT (Email) DO NOTHING;
 
 -- 3. Holiday
@@ -135,18 +152,27 @@ ON CONFLICT (EmployeeID, TaxYear) DO NOTHING;
 -- 6. LeaveRecord
 INSERT INTO LeaveRecord (EmployeeID, LeaveType, StartDate, EndDate, Reason, Status)
 VALUES
-(1, 'Annual', '2025-05-10', '2025-05-15', 'Vacation trip', 'Approved'),
-(2, 'Sick', '2025-02-05', '2025-02-07', 'Flu', 'Approved'),
-(3, 'Personal', '2025-03-12', '2025-03-13', 'Family matters', 'Pending')
+(1, 'ลาพักร้อน', '2025-05-10', '2025-05-15', 'ท่องเที่ยว', 'อนุมัติ'),
+(2, 'ลาป่วย', '2025-02-05', '2025-02-07', 'ไข้หวัด', 'อนุมัติ'),
+(3, 'ลากิจ', '2025-03-12', '2025-03-13', 'อยู่กับครอบครัว', 'รอพิจารณา')
 ON CONFLICT DO NOTHING;
 
 -- 7. ReportFile
-INSERT INTO ReportFile (ReportType, CreatedBy, FilePath)
+INSERT INTO reports (employee_id, name, description, date, category, status)
 VALUES
-('Monthly Report', 1, '/reports/jan2025.pdf'),
-('Employee Summary', 2, '/reports/employees2025.pdf')
-ON CONFLICT DO NOTHING;
+(1, 'รายงานประจำเดือนกันยายน', 'สรุปงานและผลการดำเนินงานของเดือนกันยายน', '2025-09-30', 'รายงานประจำเดือน', 'รอพิจารณา'),
+(2, 'รายงานโครงการ A', 'รายละเอียดการดำเนินโครงการ A', '2025-10-05', 'รายงานโครงการ', 'อนุมัติแล้ว'),
+(3, 'รายงานการประชุม', 'สรุปผลการประชุมทีมงาน', '2025-10-08', 'รายงานการประชุม', 'ไม่อนุมัติ');
 
+-- ============================
+-- Insert ตัวอย่าง Report Files
+-- ============================
+INSERT INTO report_files (report_id, file_path)
+VALUES
+(1, '/files/report_september_summary.pdf'),
+(1, '/files/attendance_september.xlsx'),
+(2, '/files/project_A_plan.docx'),
+(3, '/files/meeting_minutes.pdf');
 -- 8. AccessLog
 INSERT INTO AccessLog (UserID, Action)
 VALUES

@@ -19,7 +19,7 @@ const EmployeeList = ({ employees, onAdd, onEdit, onDelete, onView }) => {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">รหัสพนักงาน</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">พนักงาน</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ชื่อ-สกุล</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ตำแหน่ง</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">แผนก</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">สถานะ</th>
@@ -35,7 +35,7 @@ const EmployeeList = ({ employees, onAdd, onEdit, onDelete, onView }) => {
                     {emp.id}
                   </td>
 
-                  {/* ชื่อไทย */}
+                  {/* ชื่อ-สกุล */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {emp.firstNameTh} {emp.lastNameTh}
                   </td>
@@ -88,10 +88,7 @@ const EmployeeList = ({ employees, onAdd, onEdit, onDelete, onView }) => {
               ))
             ) : (
               <tr>
-                <td
-                  colSpan="6"
-                  className="text-center py-6 text-gray-500"
-                >
+                <td colSpan="6" className="text-center py-6 text-gray-500">
                   ไม่มีข้อมูลพนักงาน
                 </td>
               </tr>

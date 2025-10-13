@@ -1,29 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
+import { holidayAPI } from "../services/api";
 
 const Calendar = () => {
-  const [holidays, setHolidays] = useState([
-    {
-      id: 1,
-      name: "วันหยุดปีใหม่",
-      date: "2024-01-01",
-      type: "วันหยุด",
-      color: "red"
-    },
-    {
-      id: 2,
-      name: "ประชุมประจำเดือน",
-      date: "2024-01-15",
-      type: "ประชุม",
-      color: "blue"
-    },
-    {
-      id: 3,
-      name: "วันสงกรานต์",
-      date: "2024-04-13",
-      type: "วันหยุด",
-      color: "red"
-    },
-  ]);
+  const [holidays, setHolidays] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+      loadEmployees();
+    }, []);
+  
+    const loadEmployees = async () => {
+      try {
+        setLoading(true);
+        const data = await holidayAPI.getAll();
+        
+        // Transform backend data to match frontend format
+        const transformedData = data.map(emp => ({
+          id: emp.holiday_id,
+          name: emp.holiday_name,
+          date: emp.date ? emp.date.split("T")[0] : "",
+          type: emp.description,
+          color: emp.description === "วันหยุด" ? "red" : "blue"
+        }));
+        
+        setHolidays(transformedData);
+      } catch (err) {
+        console.error("Error loading calendar:", err);
+        alert("ไม่สามารถโหลดข้อมูลวันหยุดได้");
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const [isAddPage, setIsAddPage] = useState(false);
   
@@ -32,12 +38,17 @@ const Calendar = () => {
     date: "",
     type: "วันหยุด"
   });
-
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("คุณต้องการลบกิจกรรมนี้หรือไม่?")) {
-      setHolidays(holidays.filter(holiday => holiday.id !== id));
+      try {
+        await holidayAPI.delete(id);
+        setHolidays(holidays.filter(holiday => holiday.id !== id));
+      } catch (err) {
+        console.error("Error deleting holiday:", err);
+      }
     }
   };
+ 
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -47,7 +58,7 @@ const Calendar = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     const newHoliday = {
@@ -57,6 +68,13 @@ const Calendar = () => {
       type: formData.type,
       color: formData.type === "วันหยุด" ? "red" : "blue"
     };
+    const sendHoliday = {
+      holiday_id: holidays.length > 0 ? Math.max(...holidays.map(h => h.id)) + 1 : 1,
+      holiday_name: formData.name,
+      date: formData.date,
+      description: formData.type,
+    };
+    const savedHoliday = await holidayAPI.create(sendHoliday);
 
     setHolidays([...holidays, newHoliday]);
     setFormData({ name: "", date: "", type: "วันหยุด" });
