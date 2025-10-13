@@ -1,13 +1,37 @@
-import React, { useState } from 'react';
-import { MailIcon, PhoneIcon, LocationMarkerIcon, ClockIcon } from '@heroicons/react/outline';
+import React, { useState, useEffect } from 'react';
+import { taxAPI } from '../services/api';
+import { employeeAPI } from '../services/api';
 
 const TaxPage = () => {
-  // ข้อมูลพนักงานตัวอย่างจากฐานข้อมูล
-  const employees = [
-    { id: "EMP001", name: "สมชาย ใจดี"},
-    { id: "EMP002", name: "สาวิตรี สุขใจ"},
-    { id: "EMP003", name: "อนุชา พัฒนา"},
-  ];
+  // ข้อมูลตัวอย่างพนักงาน
+  const [loading, setLoading] = useState(true);
+  const [employees, setEmployees] = useState([
+    
+  ]);
+
+  useEffect(() => {
+    loadEmployees();
+  }, []);
+
+  const loadEmployees = async () => {
+    try {
+      setLoading(true);
+      const data = await employeeAPI.getAll();
+      const transformed = data.map(emp => ({
+        id: emp.id,
+        name: emp.thai_first_name + emp.thai_last_name,
+        position: emp.position,
+        department: emp.department_id,
+      }));
+
+      setEmployees(transformed);
+    } catch (err) {
+      console.error("Error loading employees:", err);
+      alert("ไม่สามารถโหลดข้อมูลพนักงานได้");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // State สำหรับเก็บข้อมูลภาษีทั้งหมด
   const [taxRecords, setTaxRecords] = useState([
@@ -102,6 +126,14 @@ const TaxPage = () => {
     setTaxRecords(taxRecords.filter(record => record.id !== id));
   };
 
+
+
+
+
+
+
+
+  
   // หน้าฟอร์มคำนวณภาษี
   if (showCalculateForm) {
     return (

@@ -445,6 +445,84 @@ func getAllTaxes(c *gin.Context) {
 	c.JSON(http.StatusOK, taxes)
 }
 
+// อ่านรายบุคคล
+func getTaxByID(c *gin.Context) {
+	id := c.Param("id")
+	var t Tax
+	err := db.QueryRow(
+		"SELECT taxid, employeeid, taxyear, salary, taxpaid, benefits, status FROM tax WHERE taxid=$1", 
+		id,
+	).Scan(&t.ID, &t.EmployeeID, &t.TaxYear, &t.Salary, &t.TaxPaid, &t.Benefits, &t.Status)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Tax record not found"})
+		return
+	}
+	c.JSON(http.StatusOK, t)
+}
+// เพิ่มข้อมูลใหม่
+func createTax(c *gin.Context) {
+	var t Tax
+	if err := c.ShouldBindJSON(&t); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := db.QueryRow(
+		`INSERT INTO tax (employeeid, taxyear, salary, taxpaid, benefits, status) 
+		 VALUES ($1,$2,$3,$4,$5,$6) RETURNING taxid`,
+		t.EmployeeID, t.TaxYear, t.Salary, t.TaxPaid, t.Benefits, t.Status,
+	).Scan(&t.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, t)
+}
+// แก้ไขข้อมูล
+func updateTax(c *gin.Context) {
+	id := c.Param("id")
+	var t Tax
+	if err := c.ShouldBindJSON(&t); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	res, err := db.Exec(
+		`UPDATE tax SET taxyear=$1, salary=$2, taxpaid=$3, benefits=$4, status=$5 WHERE taxid=$6`,
+		t.TaxYear, t.Salary, t.TaxPaid, t.Benefits, t.Status, id,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	rowsAffected, _ := res.RowsAffected()
+	if rowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Tax record not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Tax record updated"})
+}
+// ลบข้อมูล
+func deleteTax(c *gin.Context) {
+	id := c.Param("id")
+	res, err := db.Exec("DELETE FROM tax WHERE taxid=$1", id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	rowsAffected, _ := res.RowsAffected()
+	if rowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Tax record not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Tax record deleted"})
+}
+
 // ==================== ReportFile Handlers ====================
 func getAllReports(c *gin.Context) {
     query := `
@@ -560,7 +638,7 @@ func main() {
 	os.MkdirAll("./uploads", os.ModePerm)
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
-        AllowOrigins:     []string{"http://127.0.0.1:3000"}, // หรือ ["*"] สำหรับ dev
+        AllowOrigins:     []string{"*"}, // หรือ ["*"] สำหรับ dev
         AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
         AllowHeaders:     []string{"Origin", "Content-Type"},
         ExposeHeaders:    []string{"Content-Length"},
@@ -599,6 +677,10 @@ func main() {
 
 		// Tax
 		api.GET("/taxes", getAllTaxes)
+		api.GET("/taxes/:id", getTaxByID)    // อ่านรายบุคคล
+		api.POST("/taxes", createTax)        // เพิ่มข้อมูลใหม่
+		api.PUT("/taxes/:id", updateTax)     // แก้ไขข้อมูล
+		api.DELETE("/taxes/:id", deleteTax)  // ลบข้อมูล
 
 		// ReportFile
    		api.GET("/reports", getAllReports)

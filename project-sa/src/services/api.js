@@ -137,5 +137,30 @@ export const ReportAPI = {
       body: new URLSearchParams({ status })
     });
   }
+  
 };
+
+
+export const taxAPI = {
+  getAll: async () => {
+    const res = await api.get('/taxes');
+    return res.data;
+  },
+
+  create: async (taxData) => {
+    const res = await api.post('/taxes', taxData);
+    return res.data;
+  },
+
+  update: async (id, taxData) => {
+    const res = await api.put(`/taxes/${id}`, taxData);
+    return res.data;
+  },
+
+  delete: async (id) => {
+    const res = await api.delete(`/taxes/${id}`);
+    return res.data;
+  }
+};
+
 export default api;
