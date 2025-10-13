@@ -1,49 +1,24 @@
 import React from "react";
 
 const ContractView = ({ contract, onClose }) => {
-  if (!contract) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 relative">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 font-bold"
-        >
-          X
-        </button>
-
-        <h2 className="text-2xl font-bold mb-4">รายละเอียดสัญญา</h2>
-
-        <div className="space-y-2">
-          <p><span className="font-semibold">รหัสสัญญา:</span> {contract.contractCode}</p>
-          <p><span className="font-semibold">รหัสพนักงาน:</span> {contract.employeeId}</p>
-          <p><span className="font-semibold">พนักงาน:</span> {contract.employeeName}</p>
-          <p><span className="font-semibold">ประเภทสัญญา:</span> {contract.type}</p>
-          <p><span className="font-semibold">ระยะเวลา:</span> {contract.startDate} - {contract.endDate}</p>
-          <p><span className="font-semibold">เงินเดือน:</span> {contract.salary.toLocaleString()} บาท</p>
-          <p>
-            <span className="font-semibold">สถานะ:</span>{" "}
-            <span
-              className={`px-2 inline-flex text-xs rounded-full ${contract.status === "active"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
-                }`}
-            >
-              {contract.status === "active" ? "ใช้งาน" : "หมดอายุ"}
-            </span>
-          </p>
-        </div>
-
-        <div className="mt-6 flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
-          >
-            ปิด
-          </button>
-        </div>
+    <div className="p-6 bg-white rounded shadow-lg">
+      <h2 className="text-xl font-bold mb-4">รายละเอียดสัญญา</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <p><strong>ID:</strong> {contract.id}</p>
+        <p><strong>พนักงาน:</strong> {contract.employee_name || contract.employee_id}</p>
+        <p><strong>ประเภท:</strong> {contract.type}</p>
+        <p><strong>เริ่ม:</strong> {contract.start_date}</p>
+        <p><strong>สิ้นสุด:</strong> {contract.end_date}</p>
+        <p><strong>เงินเดือน:</strong> {contract.salary}</p>
+        <p><strong>สถานะ:</strong> {contract.status}</p>
       </div>
+      <button
+        onClick={onClose}
+        className="mt-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+      >
+        ปิด
+      </button>
     </div>
   );
 };

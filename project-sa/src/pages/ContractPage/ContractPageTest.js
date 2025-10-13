@@ -1,88 +1,91 @@
-// src/pages/ContractPage/index.js
-import React, { useState } from "react";
-import ContractList from "./ContractList";
+import React, { useEffect, useState } from "react";
+import { employeeAPI, contractAPI } from "../../services/api";
 import ContractForm from "./ContractForm";
+import ContractList from "./ContractList";
 import ContractView from "./ContractView";
 
 const ContractPage = () => {
-  // ตัวอย่างพนักงานสอดคล้องกับ EmployeePage
-  const employees = [
-    { id: "EMP001", firstNameTh: "สมชาย", lastNameTh: "ใจดี" },
-    { id: "EMP002", firstNameTh: "สาวิตรี", lastNameTh: "สุขใจ" },
-    { id: "EMP003", firstNameTh: "อนุชา", lastNameTh: "พัฒนา" },
-  ];
-
-  // แปลงชื่อเต็มสำหรับ select
-  const employeeOptions = employees.map(emp => ({
-    id: emp.id,
-    name: `${emp.id} - ${emp.firstNameTh} ${emp.lastNameTh}`
-  }));
-
-  // ตัวอย่างสัญญาที่สร้างแล้ว (เพิ่ม contractCode)
-  const initialContracts = [
-    {
-      id: 1,
-      contractCode: "CT001",
-      employeeId: "EMP001",
-      employeeName: "สมชาย ใจดี",
-      type: "Full-time",
-      startDate: "2023-01-01",
-      endDate: "2023-12-31",
-      salary: 30000,
-      status: "active"
-    },
-    {
-      id: 2,
-      contractCode: "CT002",
-      employeeId: "EMP002",
-      employeeName: "สาวิตรี สุขใจ",
-      type: "Part-time",
-      startDate: "2023-02-01",
-      endDate: "2023-08-31",
-      salary: 15000,
-      status: "inactive"
-    }
-  ];
-
-  const [contracts, setContracts] = useState(initialContracts);
+  const [employees, setEmployees] = useState([]);
+  const [contracts, setContracts] = useState([]);
   const [selectedContract, setSelectedContract] = useState(null);
-  const [view, setView] = useState("list"); // list | add | edit | detail
+  const [view, setView] = useState("list");
+  const [loading, setLoading] = useState(true);
 
-  // 🔹 ฟังก์ชันสร้างรหัสสัญญาใหม่
-  const generateContractCode = () => {
-    const nextNumber = contracts.length + 1;
-    return `CT${String(nextNumber).padStart(3, "0")}`; // เช่น CT003
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [empRes, contractRes] = await Promise.all([
+          employeeAPI.getAll(),
+          contractAPI.getAll(),
+        ]);
 
-  const handleAdd = (contract) => {
-    const emp = employees.find(e => e.id === contract.employeeId);
-    setContracts([
-      ...contracts,
-      {
-        ...contract,
-        id: Date.now(),
-        contractCode: generateContractCode(), // เพิ่มรหัสสัญญาอัตโนมัติ
-        employeeName: emp ? `${emp.firstNameTh} ${emp.lastNameTh}` : contract.employeeName
+        // แปลงพนักงาน
+        const empData = (empRes.data || empRes || []).map((emp) => ({
+          id: emp.id,
+          name:
+            emp.thai_first_name && emp.thai_last_name
+              ? `${emp.thai_first_name} ${emp.thai_last_name}`
+              : emp.firstNameTh && emp.lastNameTh
+              ? `${emp.firstNameTh} ${emp.lastNameTh}`
+              : "ไม่ระบุชื่อ",
+        }));
+        setEmployees(empData);
+
+        // สัญญา
+        const contractData = contractRes.data?.data || contractRes.data || [];
+        setContracts(Array.isArray(contractData) ? contractData : []);
+      } catch (err) {
+        console.error("โหลดข้อมูลไม่สำเร็จ:", err);
+        alert("ไม่สามารถโหลดข้อมูลได้");
+      } finally {
+        setLoading(false);
       }
-    ]);
-    setView("list");
-  };
+    };
+    fetchData();
+  }, []);
 
-  const handleUpdate = (updated) => {
-    const emp = employees.find(e => e.id === updated.employeeId);
-    setContracts(contracts.map(c => c.id === updated.id ? { 
-      ...updated, 
-      employeeName: emp ? `${emp.firstNameTh} ${emp.lastNameTh}` : updated.employeeName,
-      contractCode: c.contractCode // คงค่า contractCode เดิมไว้
-    } : c));
-    setView("list");
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm("ลบสัญญานี้หรือไม่?")) {
-      setContracts(contracts.filter(c => c.id !== id));
+  const handleAdd = async (contract) => {
+    try {
+      const res = await contractAPI.create(contract);
+      const newContract = res.data || res.data?.data || contract;
+      setContracts([...contracts, newContract]);
+      setView("list");
+      alert("สร้างสัญญาเรียบร้อยแล้ว");
+    } catch (err) {
+      console.error("สร้างสัญญาไม่สำเร็จ:", err);
+      alert(err.response?.data?.error || "ไม่สามารถสร้างสัญญาได้");
     }
   };
+
+  const handleUpdate = async (updated) => {
+    try {
+      const res = await contractAPI.update(updated.id, updated);
+      const updatedContract = res.data?.data || res.data || updated;
+      setContracts(
+        contracts.map((c) => (c.id === updated.id ? updatedContract : c))
+      );
+      setView("list");
+      alert("แก้ไขสัญญาสำเร็จ");
+    } catch (err) {
+      console.error("แก้ไขไม่สำเร็จ:", err);
+      alert(err.response?.data?.error || "ไม่สามารถแก้ไขสัญญาได้");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("คุณต้องการลบสัญญานี้หรือไม่?")) return;
+    try {
+      await contractAPI.delete(id);
+      setContracts(contracts.filter((c) => c.id !== id));
+      alert("ลบสัญญาสำเร็จ");
+    } catch (err) {
+      console.error("ลบไม่สำเร็จ:", err);
+      alert("ไม่สามารถลบสัญญาได้");
+    }
+  };
+
+  if (loading) return <p>กำลังโหลดข้อมูล...</p>;
 
   return (
     <div className="p-6">
@@ -90,25 +93,23 @@ const ContractPage = () => {
         <ContractList
           contracts={contracts}
           onAdd={() => setView("add")}
-          onView={(c) => { setSelectedContract(c); setView("detail"); }}
-          onEdit={(c) => { setSelectedContract(c); setView("edit"); }}
+          onView={(c) => {
+            setSelectedContract(c);
+            setView("detail");
+          }}
+          onEdit={(c) => {
+            setSelectedContract(c);
+            setView("edit");
+          }}
           onDelete={handleDelete}
         />
       )}
 
-      {view === "add" && (
+      {(view === "add" || view === "edit") && (
         <ContractForm
-          employees={employeeOptions}
-          onSave={handleAdd}
-          onCancel={() => setView("list")}
-        />
-      )}
-
-      {view === "edit" && selectedContract && (
-        <ContractForm
-          employees={employeeOptions}
-          contract={selectedContract}
-          onSave={handleUpdate}
+          employees={employees}
+          contract={view === "edit" ? selectedContract : null}
+          onSave={view === "edit" ? handleUpdate : handleAdd}
           onCancel={() => setView("list")}
         />
       )}

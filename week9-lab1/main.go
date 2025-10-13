@@ -64,6 +64,7 @@ type LeaveRecord struct {
 type Contract struct {
 	ID         int     `json:"id"`
 	EmployeeID int     `json:"employee_id"`
+	EmployeeName string  `json:"employee_name"`
 	Type       string  `json:"type"`
 	StartDate  string  `json:"start_date"`
 	EndDate    string  `json:"end_date"`
@@ -406,23 +407,234 @@ func deleteHoliday(c *gin.Context) {
 
 // ==================== Contract Handlers ====================
 func getAllContracts(c *gin.Context) {
-	rows, err := db.Query("SELECT contractid, employeeid, contracttype, startdate, enddate, salary, status FROM contract")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	defer rows.Close()
+    query := `
+        SELECT 
+            c.contractid, 
+            c.employeeid, 
+            e.thaifirstname || ' ' || e.thailastname AS employee_name,
+            c.contracttype, 
+            c.startdate, 
+            c.enddate, 
+            c.salary, 
+            c.status
+        FROM contract c
+        JOIN employee e ON c.employeeid = e.employeeid
+    `
 
-	var contracts []Contract
-	for rows.Next() {
-		var co Contract
-		if err := rows.Scan(&co.ID, &co.EmployeeID, &co.Type, &co.StartDate, &co.EndDate, &co.Salary, &co.Status); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		contracts = append(contracts, co)
-	}
-	c.JSON(http.StatusOK, contracts)
+    rows, err := db.Query(query)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+    defer rows.Close()
+
+    type ContractResponse struct {
+        ID           int     `json:"id"`
+        EmployeeID   int     `json:"employee_id"`
+        EmployeeName string  `json:"employee_name"`
+        Type         string  `json:"type"`
+        StartDate    string  `json:"start_date"`
+        EndDate      string  `json:"end_date"`
+        Salary       float64 `json:"salary"`
+        Status       string  `json:"status"`
+    }
+
+    var contracts []ContractResponse
+    for rows.Next() {
+        var co ContractResponse
+        if err := rows.Scan(
+            &co.ID, 
+            &co.EmployeeID, 
+            &co.EmployeeName,
+            &co.Type, 
+            &co.StartDate, 
+            &co.EndDate, 
+            &co.Salary, 
+            &co.Status,
+        ); err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            return
+        }
+        contracts = append(contracts, co)
+    }
+
+    c.JSON(http.StatusOK, contracts)
+}
+
+// ========================
+// GET contract by ID
+// ========================
+func GetContractByID(c *gin.Context) {
+    id := c.Param("id")
+    query := `
+        SELECT 
+            c.contractid, 
+            c.employeeid, 
+            e.thaifirstname || ' ' || e.thailastname AS employee_name,
+            c.contracttype, 
+            c.startdate, 
+            c.enddate, 
+            c.salary, 
+            c.status
+        FROM contract c
+        JOIN employee e ON c.employeeid = e.employeeid
+        WHERE c.contractid = $1
+    `
+
+    var co Contract
+    err := db.QueryRow(query, id).Scan(
+        &co.ID,
+        &co.EmployeeID,
+        &co.EmployeeName,
+        &co.Type,
+        &co.StartDate,
+        &co.EndDate,
+        &co.Salary,
+        &co.Status,
+    )
+    if err != nil {
+        if err == sql.ErrNoRows {
+            c.JSON(http.StatusNotFound, gin.H{"error": "Contract not found"})
+            return
+        }
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
+    c.JSON(http.StatusOK, co)
+}
+
+// ========================
+// CREATE new contract
+// ========================
+func CreateContract(c *gin.Context) {
+    var co Contract
+
+    // ตรวจสอบและแปลงข้อมูล JSON ที่ส่งมา
+    if err := c.ShouldBindJSON(&co); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    // ตรวจสอบว่าพนักงานมีอยู่จริง
+    var exists bool
+    err := db.QueryRow(`SELECT EXISTS(SELECT 1 FROM employee WHERE employeeid = $1)`, co.EmployeeID).Scan(&exists)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+    if !exists {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Employee not found"})
+        return
+    }
+
+    // เพิ่มข้อมูลสัญญาใหม่
+    err = db.QueryRow(
+        `INSERT INTO contract (employeeid, contracttype, startdate, enddate, salary, status)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING contractid`,
+        co.EmployeeID, co.Type, co.StartDate, co.EndDate, co.Salary, co.Status,
+    ).Scan(&co.ID)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
+    // ดึงชื่อพนักงานจากตาราง employee (ใช้ COALESCE ป้องกัน null)
+    err = db.QueryRow(
+        `SELECT COALESCE(thai_first_name,'') || ' ' || COALESCE(thai_last_name,'') 
+         FROM employee WHERE employeeid = $1`,
+        co.EmployeeID,
+    ).Scan(&co.EmployeeName)
+
+    if err != nil {
+        // ถ้าดึงชื่อไม่ได้ก็ยังส่งข้อมูล contract กลับไปได้
+        co.EmployeeName = ""
+    }
+
+    // ส่งผลลัพธ์กลับ
+    c.JSON(http.StatusCreated, co)
+}
+
+
+// ========================
+// UPDATE contract
+// ========================
+func UpdateContract(c *gin.Context) {
+    id := c.Param("id")
+    var co Contract
+    if err := c.ShouldBindJSON(&co); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    // ตรวจสอบพนักงานมีอยู่จริง
+    var exists bool
+    err := db.QueryRow(`SELECT EXISTS(SELECT 1 FROM employee WHERE employeeid = $1)`, co.EmployeeID).Scan(&exists)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+    if !exists {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Employee not found"})
+        return
+    }
+
+    // อัปเดต contract
+    query := `
+        UPDATE contract
+        SET employeeid = $1, contracttype = $2, startdate = $3, enddate = $4, salary = $5, status = $6
+        WHERE contractid = $7
+    `
+    res, err := db.Exec(query, co.EmployeeID, co.Type, co.StartDate, co.EndDate, co.Salary, co.Status, id)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
+    rowsAffected, _ := res.RowsAffected()
+    if rowsAffected == 0 {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Contract not found"})
+        return
+    }
+
+    // ดึงชื่อพนักงานหลัง update
+    err = db.QueryRow(
+        `SELECT thai_first_name || ' ' || thai_last_name FROM employee WHERE employeeid = $1`,
+        co.EmployeeID,
+    ).Scan(&co.EmployeeName)
+
+    if err != nil {
+        co.EmployeeName = ""
+    }
+
+    co.ID, _ = strconv.Atoi(id) // แปลง id string เป็น int
+
+    // ส่งกลับ contract ที่อัปเดตพร้อมชื่อพนักงาน
+    c.JSON(http.StatusOK, co)
+}
+
+// ========================
+// DELETE contract
+// ========================
+func DeleteContract(c *gin.Context) {
+    id := c.Param("id")
+
+    query := `DELETE FROM contract WHERE contractid = $1`
+    res, err := db.Exec(query, id)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
+    rowsAffected, _ := res.RowsAffected()
+    if rowsAffected == 0 {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Contract not found"})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{"message": "Contract deleted"})
 }
 
 // ==================== Tax Handlers ====================
@@ -716,6 +928,10 @@ func main() {
 
 		// Contract
 		api.GET("/contracts", getAllContracts)
+        api.GET("/contracts/:id",GetContractByID )    // GET by ID
+        api.POST("/contracts",CreateContract )       // CREATE
+        api.PUT("/contracts:id",UpdateContract )     // UPDATE
+        api.DELETE("/contracts/:id",DeleteContract )  // DELETE
 
 		// Tax
 		api.GET("/taxes", getAllTaxes)

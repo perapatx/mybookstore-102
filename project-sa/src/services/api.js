@@ -163,4 +163,15 @@ export const taxAPI = {
   }
 };
 
+// ===== CONTRACTS =====
+export const contractAPI = {
+  getAll: () => axios.get(`${API_BASE_URL}/contracts`),
+  getById: (id) => axios.get(`${API_BASE_URL}/contracts/${id}`),
+  create: (data) => axios.post(`${API_BASE_URL}/contracts`, data),
+  update: (id, data) => axios.put(`${API_BASE_URL}/contracts/${id}`, data),
+  delete: (id) => axios.delete(`${API_BASE_URL}/contracts/${id}`),
+};
+
+
+
 export default api;
