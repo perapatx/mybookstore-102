@@ -541,7 +541,18 @@ func deleteReport(c *gin.Context) {
     }
     c.JSON(http.StatusOK, gin.H{"message": "deleted"})
 }
+func updateReportStatus(c *gin.Context) {
+    reportID := c.Param("id")
+    newStatus := c.PostForm("status") // รอพิจารณา, อนุมัติแล้ว, ไม่อนุมัติ
 
+    _, err := db.Exec("UPDATE reports SET status=$1 WHERE id=$2", newStatus, reportID)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{"message": "Status updated"})
+}
 // ==================== Main ====================
 func main() {
 	initDB()
@@ -590,11 +601,11 @@ func main() {
 		api.GET("/taxes", getAllTaxes)
 
 		// ReportFile
-		os.MkdirAll("./uploads", os.ModePerm)
-
    		api.GET("/reports", getAllReports)
    		api.POST("/reports", createReportWithFiles)
     	api.DELETE("/reports/:id", deleteReport)
+
+		api.POST("/reports/:id/status", updateReportStatus)
 	}
 
 	r.Run(":8080")

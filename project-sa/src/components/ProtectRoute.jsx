@@ -1,15 +1,20 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 
-const ProtectedRoute = ({ children }) => {
-  const user = sessionStorage.getItem("user");
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const user = JSON.parse(sessionStorage.getItem("user")); // สมมติ user object เก็บ role ไว้
+  const isLoggedIn = !!user;
 
-  if (!user) {
-    // ถ้าไม่มี user -> เด้งไปหน้า login
+  if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
+  // ถ้ามี allowedRoles และ role ไม่ตรง
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/not-authorized" replace />;
+  }
+
+  return children ? children : <Outlet />;
 };
 
 export default ProtectedRoute;

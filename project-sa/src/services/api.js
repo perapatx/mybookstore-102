@@ -130,6 +130,12 @@ export const ReportAPI = {
   delete: async (id) => {
     const res = await api.delete(`/reports/${id}`);
     return res.data;
+  },
+  updateStatus: async (id, status) => {
+    return await fetch(`/api/reports/${id}/status`, {
+      method: "POST",
+      body: new URLSearchParams({ status })
+    });
   }
 };
 export default api;
