@@ -58,19 +58,14 @@ const ContractList = ({ contracts, onAdd, onView, onEdit, onDelete }) => {
                   <td className="px-6 py-4 flex gap-2">
                     <button
                       onClick={() => onView(c)}
-                      className="bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 font-medium transition-colors"
+                      className=" text-blue-700 px-3 py-1 rounded hover:bg-blue-200 font-medium transition-colors"
                     >
                       ดู
                     </button>
-                    <button
-                      onClick={() => onEdit(c)}
-                      className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded hover:bg-yellow-200 font-medium transition-colors"
-                    >
-                      แก้ไข
-                    </button>
+                    
                     <button
                       onClick={() => onDelete(c.id)}
-                      className="bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200 font-medium transition-colors"
+                      className=" text-red-700 px-3 py-1 rounded hover:bg-red-200 font-medium transition-colors"
                     >
                       ลบ
                     </button>

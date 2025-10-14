@@ -243,7 +243,7 @@ const TaxPage = () => {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-gray-600 font-medium">รหัสพนักงาน</th>
+                  <th className="px-6 py-4 text-left text-gray-600 font-medium">รหัสภาษี</th>
                   <th className="px-6 py-4 text-left text-gray-600 font-medium">ชื่อพนักงาน</th>
                   <th className="px-6 py-4 text-left text-gray-600 font-medium">ปี</th>
                   <th className="px-6 py-4 text-left text-gray-600 font-medium">รายได้</th>

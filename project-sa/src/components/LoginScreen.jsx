@@ -122,25 +122,7 @@ const LoginScreen = ({ setIsLoggedIn }) => {
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-gray-200">
-          <p className="text-sm text-gray-600 mb-3 font-medium">บัญชีทดสอบ:</p>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between bg-purple-50 p-3 rounded-lg">
-              <div>
-                <p className="text-sm font-medium text-purple-900">HR Admin</p>
-                <p className="text-xs text-purple-700">hr / hr123</p>
-              </div>
-              <span className="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded">Full Access</span>
-            </div>
-            <div className="flex items-center justify-between bg-green-50 p-3 rounded-lg">
-              <div>
-                <p className="text-sm font-medium text-green-900">Manager</p>
-                <p className="text-xs text-green-700">manager / manager123</p>
-              </div>
-              <span className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded">Limited Access</span>
-            </div>
-          </div>
-        </div>
+        
       </div>
     </div>
   );
